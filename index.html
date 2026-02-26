@@ -348,7 +348,35 @@ var SHOPS = [
   }
 ];
 
-var activeCat = 'all';
+var AIRTABLE_TOKEN = pate4m0HIrUgvnIZK.589697d1362a3bd8b14cb712f9c40a7a1d0bd539b91684b4ded458648c62ede7
+var AIRTABLE_BASE_ID = app3h7e16KyGoVoBx/tblGj6UVmR3M0f9nf/viwsGV5Dzi08k8suE?blocks=hide
+var AIRTABLE_TABLE = 'Shops';
+
+function saveToAirtable(shop) {
+  fetch('https://api.airtable.com/v0/' + AIRTABLE_BASE_ID + '/' + AIRTABLE_TABLE, {
+    method: 'POST',
+    headers: {
+      'Authorization': 'Bearer ' + AIRTABLE_TOKEN,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      fields: {
+        'Name': shop.name,
+        'Handle': shop.handle,
+        'Instagram': shop.ig,
+        'Category': shop.category,
+        'Description': shop.desc,
+        'LINE': shop.line || '',
+        'Status': 'Pending'
+      }
+    })
+  })
+  .then(function(res) { return res.json(); })
+  .then(function(data) { console.log('Saved to Airtable:', data); })
+  .catch(function(err) { console.error('Airtable error:', err); });
+}
+
+
 
 function setCategory(cat, el) {
   activeCat = cat;
@@ -451,14 +479,17 @@ function doSubmit() {
   var m = igUrl.match(/instagram\.com\/([^/?#]+)/);
   var handle = m ? '@' + m[1] : igRaw;
 
-  SHOPS.unshift({
+  var shop = {
     name: name, handle: handle, category: cat,
     desc: desc, fullDesc: desc, emoji: '🏪',
     ig: igUrl, line: line || null, tags: [cat],
     posts: '—', followers: '—', since: '2025',
     cover: 'linear-gradient(135deg,#F2C4A8,#C9643A)',
     photos: ['🏪','📦','✨','🛍️','💫','⭐','🎁','📸','💬']
-  });
+  };
+
+  saveToAirtable(shop);
+  SHOPS.unshift(shop);
 
   document.getElementById('f_name').value = '';
   document.getElementById('f_ig').value = '';
